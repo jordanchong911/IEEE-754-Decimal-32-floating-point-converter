@@ -138,7 +138,7 @@ def decode_coefficient(coefficient):
 
     return result
 
-
+# Source code from https://github.com/Jamie03/BCD_Converter/blob/master/BCD_Converter.py
 def densely_packed(number):
     bcd = []
     dpbcd = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
