@@ -12,6 +12,15 @@ def convert_and_display(num_entry, power_entry, rounding_combobox, result_text):
     num = num_entry.get()
     power = power_entry.get()
     rounding_method = rounding_combobox.get()  # Get the selected rounding method from the combobox
+
+    # Validate if num and power are numeric values
+    if not (num.replace('.', '', 1).isdigit() or num.lstrip('-').replace('.', '', 1).isdigit()):
+        messagebox.showerror("Error", "Please enter a valid number.")
+        return
+    if not (power.isdigit() or power.lstrip('-').isdigit()):
+        messagebox.showerror("Error", "Please enter a valid power.")
+        return
+
     if (rounding_method == "Truncate"):
         rounding = "truncate"
     elif (rounding_method == "Round Up"):
@@ -22,9 +31,7 @@ def convert_and_display(num_entry, power_entry, rounding_combobox, result_text):
         rounding = "nearest_even"
     elif (rounding_method == "Round, Ties Away Zero"):
         rounding = "nearest_zero"
-    if not num or not power:
-        messagebox.showerror("Error", "Please enter both number and power.")
-        return
+
     try:
         # Perform conversion
         binary, hexadecimal = convert_to_dpd(num, int(power), rounding)
@@ -42,7 +49,7 @@ def export_to_text(binary, hexadecimal):
 
 def create_gui():
     root = tk.Tk()
-    root.title("IEEE-754 Decimal-32 Floating-Point Converter")
+    root.title("IEEE-754 Decimal-64 Floating-Point Converter")
 
     # Create entry fields
     num_label = tk.Label(root, text="Number:")
