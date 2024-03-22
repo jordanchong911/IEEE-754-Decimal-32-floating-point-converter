@@ -9,49 +9,21 @@ from logic.densely_packed_BCD import convert_to_dpd
 from logic.densely_packed_BCD import write_to_file  # Import the write_to_file function
 
 def convert_and_display(num_entry, power_entry, rounding_combobox, result_text):
-    negative_number = False
-    negative_power = False
     num = num_entry.get()
     power = power_entry.get()
     rounding_method = rounding_combobox.get()
 
     # Validate if num and power contain only '-' or '+'
-    if not all(char.isdigit() or char in ['-', '+'] for char in num):
+    if not all(char.isdigit() or char in ['-', '+', '.'] for char in num):
         messagebox.showerror("Error", "Please enter a valid number.")
         return
 
     if not all(char.isdigit() or char in ['-', '+'] for char in power):
         messagebox.showerror("Error", "Please enter a valid power.")
         return
-    
-    if num[0] == '-':
-        negative_number = True
-        num = num.replace('-', '')
     else:
-        num = num.replace('+', '')
-    
-    if power[0] == '-':
-        negative_power = True
-        power = power.replace('-', '')
-    else:
-        power = power.replace('+', '')
-
-    # Validate if num and power are numeric values
-    try:
-        num = float(num)
-        if negative_number:
-            num *= -1
-    except ValueError:
-        messagebox.showerror("Error", "Please enter a valid number.")
-        return
-
-    try:
         power = int(power)
-        if negative_power:
-            power *= -1
-    except ValueError:
-        messagebox.showerror("Error", "Please enter a valid power.")
-        return
+    
 
     if rounding_method == "Truncate":
         rounding = "truncate"
@@ -63,8 +35,6 @@ def convert_and_display(num_entry, power_entry, rounding_combobox, result_text):
         rounding = "nearest_even"
     elif rounding_method == "Round, Ties Away Zero":
         rounding = "nearest_zero"
-
-    num = str(num)
 
     try:
         # Perform conversion
