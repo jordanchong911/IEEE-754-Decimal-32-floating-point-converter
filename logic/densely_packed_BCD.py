@@ -17,8 +17,8 @@ def normalize_number(number, exponent, rounding):
 
     if num_decimal_digits <= 16:
         adjust_exponent += 16 - num_decimal_digits
-        padded_number = "0" * (16 - num_decimal_digits)
-        padded_number += integer_part + float_part
+        padded_number = integer_part + float_part
+        padded_number = padded_number.zfill(16)
     elif num_decimal_digits > 16:
         padded_number = integer_part + float_part
         padded_number = padded_number.zfill(16)
@@ -104,12 +104,12 @@ def extract_components(number, exponent):
         binary_exponent = bin(biased_exponent)[2:].zfill(10)
         combi = extract_combi(number, binary_exponent[:2])
         exponent = binary_exponent[-8:]
-        coefficient = ''.join(decode_coefficient(number[1:16]))
+        coefficient = ''.join(decode_coefficient(number[2:])) if number[0] == '-' else ''.join(decode_coefficient(number[1:]))
 
     return sign_bit, combi, exponent, coefficient
 
 def extract_combi(floating_point, exponent_string):
-    first_digit = int(floating_point[1])
+    first_digit = int(floating_point[1]) if floating_point[0] == '-' else int(floating_point[0])
     string_binary_fdigit = bin(first_digit)[2:].zfill(3)
     string_exponent = exponent_string[:2]
 
@@ -144,6 +144,10 @@ def densely_packed(number):
         digit_int = int(digit)
         binary_digit = bin(int(digit_int))[2:].zfill(4)  # Convert each digit to 4-bit binary
         bcd.extend(binary_digit)  # Append each bit of the binary representation to the BCD list
+
+    # Check if 'bcd' has less than 12 elements
+    while len(bcd) < 12:
+        bcd.insert(0, '0')  # Append zeros to the left until 'bcd' has 12 elements
 
     checker = [bcd[0], bcd[4], bcd[8]]
     dpbcd[0] = checker[0]
@@ -200,8 +204,8 @@ def densely_packed(number):
         dpbcd[8] = bcd[7]
         dpbcd[12] = bcd[11]
 
-        dpbcd[3] = bcd[9]
-        dpbcd[4] = bcd[10]
+        dpbcd[3] = bcd[1]
+        dpbcd[4] = bcd[2]
 
         dpbcd[6] = bcd[5]
         dpbcd[7] = bcd[6]
@@ -249,7 +253,7 @@ def densely_packed(number):
         dpbcd[4] = bcd[10]
 
         dpbcd[6] = '0'
-        dpbcd[7] = '1'
+        dpbcd[7] = '0'
 
         dpbcd[10] = '1'
         dpbcd[11] = '1'
