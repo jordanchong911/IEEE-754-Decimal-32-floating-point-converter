@@ -2,11 +2,11 @@
 This is the simulation project that our professor, Mr. Roger Luis Uy, gave to the group as one of the requirements for passing CSARCH2.
 
 # Contributors
-Jordan Chester Chong
-Mark Daniel Gutierrez
-Miguel Carlo Kua
-Kaci Reena Santos
-Kevin Bryan Tuco
+- Jordan Chester Chong
+- Mark Daniel Gutierrez
+- Miguel Carlo Kua
+- Kaci Reenea Santos
+- Kevin Bryan Tuco
 
 ## How to Use the Converter
 Download the files (GUI.py and logic folder). Once the files are downloaded, please initialize the GUI.py file.
