@@ -17,8 +17,8 @@ def normalize_number(number, exponent, rounding):
 
     if num_decimal_digits <= 16:
         adjust_exponent += 16 - num_decimal_digits
-        padded_number = "0" * (16 - num_decimal_digits)
-        padded_number += integer_part + float_part
+        padded_number = integer_part + float_part
+        padded_number = padded_number.zfill(16)
     elif num_decimal_digits > 16:
         padded_number = integer_part + float_part
         padded_number = padded_number.zfill(16)
@@ -104,12 +104,12 @@ def extract_components(number, exponent):
         binary_exponent = bin(biased_exponent)[2:].zfill(10)
         combi = extract_combi(number, binary_exponent[:2])
         exponent = binary_exponent[-8:]
-        coefficient = ''.join(decode_coefficient(number[1:16]))
+        coefficient = ''.join(decode_coefficient(number[2:])) if number[0] == '-' else ''.join(decode_coefficient(number[1:]))
 
     return sign_bit, combi, exponent, coefficient
 
 def extract_combi(floating_point, exponent_string):
-    first_digit = int(floating_point[1])
+    first_digit = int(floating_point[1]) if floating_point[0] == '-' else int(floating_point[0])
     string_binary_fdigit = bin(first_digit)[2:].zfill(3)
     string_exponent = exponent_string[:2]
 
@@ -137,7 +137,7 @@ def decode_coefficient(coefficient):
 
 def densely_packed(number):
     bcd = []
-    dpbcd = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    dpbcd = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     checker = []
 
     for digit in number:
@@ -145,133 +145,121 @@ def densely_packed(number):
         binary_digit = bin(int(digit_int))[2:].zfill(4)  # Convert each digit to 4-bit binary
         bcd.extend(binary_digit)  # Append each bit of the binary representation to the BCD list
 
+    # Check if 'bcd' has less than 12 elements
+    while len(bcd) < 12:
+        bcd.insert(0, '0')  # Append zeros to the left until 'bcd' has 12 elements
+
     checker = [bcd[0], bcd[4], bcd[8]]
-    dpbcd[0] = checker[0]
-    dpbcd[1] = checker[1]
-    dpbcd[2] = checker[2]
+    # dpbcd = 012 345 6789
+    # bcd = -0 1 2 3- -4 5 6 7- -8 9 10 11-
+    print("bcd: "+str(bcd))
+    dpbcd[2] = bcd[3]
+    dpbcd[5] = bcd[7]
+    dpbcd[9] = bcd[11]
+    print("dpbcd before ifs: "+ str(dpbcd))
+    print("checker: "+ str(checker)+'\n')
     if checker == ['0', '0', '0']:
-        dpbcd[9] = '0'
+        print("In 000")
 
-        dpbcd[3] = bcd[1]
-        dpbcd[4] = bcd[2]
-        dpbcd[5] = bcd[3]
-
-        dpbcd[6] = bcd[5]
-        dpbcd[7] = bcd[6]
-        dpbcd[8] = bcd[7]
-
-        dpbcd[10] = bcd[9]
-        dpbcd[11] = bcd[10]
-        dpbcd[12] = bcd[11]
-
-    elif checker == ['0', '0', '1']:
-        dpbcd[9] = '1'
-        dpbcd[5] = bcd[3]
-        dpbcd[8] = bcd[7]
-        dpbcd[12] = bcd[11]
-
-        dpbcd[3] = bcd[1]
-        dpbcd[4] = bcd[2]
-
-        dpbcd[6] = bcd[5]
-        dpbcd[7] = bcd[6]
-
-        dpbcd[10] = '0'
-        dpbcd[11] = '0'
-
-    elif checker == ['0', '1', '0']:
-        dpbcd[9] = '1'
-        dpbcd[5] = bcd[3]
-        dpbcd[8] = bcd[7]
-        dpbcd[12] = bcd[11]
-
-        dpbcd[3] = bcd[1]
-        dpbcd[4] = bcd[2]
-
-        dpbcd[6] = bcd[9]
-        dpbcd[7] = bcd[10]
-
-        dpbcd[10] = '0'
-        dpbcd[11] = '1'
-
-    elif checker == ['1', '0', '0']:
-        dpbcd[9] = '1'
-        dpbcd[5] = bcd[3]
-        dpbcd[8] = bcd[7]
-        dpbcd[12] = bcd[11]
-
-        dpbcd[3] = bcd[9]
-        dpbcd[4] = bcd[10]
-
-        dpbcd[6] = bcd[5]
-        dpbcd[7] = bcd[6]
-
-        dpbcd[10] = '1'
-        dpbcd[11] = '0'
-
-    elif checker == ['0', '1', '1']:
-        dpbcd[9] = '1'
-        dpbcd[5] = bcd[3]
-        dpbcd[8] = bcd[7]
-        dpbcd[12] = bcd[11]
-
-        dpbcd[3] = bcd[1]
-        dpbcd[4] = bcd[2]
-
-        dpbcd[6] = '1'
-        dpbcd[7] = '0'
-
-        dpbcd[10] = '1'
-        dpbcd[11] = '1'
-
-    elif checker == ['1', '0', '1']:
-        dpbcd[9] = '1'
-        dpbcd[5] = bcd[3]
-        dpbcd[8] = bcd[7]
-        dpbcd[12] = bcd[11]
+        dpbcd[0] = bcd[1]
+        dpbcd[1] = bcd[2]
 
         dpbcd[3] = bcd[5]
         dpbcd[4] = bcd[6]
 
         dpbcd[6] = '0'
-        dpbcd[7] = '1'
+        dpbcd[7] = bcd[9]
+        dpbcd[8] = bcd[10]
 
-        dpbcd[10] = '1'
-        dpbcd[11] = '1'
+    elif checker == ['0', '0', '1']:
+        print("In 001")
+        
+        dpbcd[0] = bcd[1]
+        dpbcd[1] = bcd[2]
 
-    elif checker == ['1', '1', '0']:
-        dpbcd[9] = '1'
-        dpbcd[5] = bcd[3]
-        dpbcd[8] = bcd[7]
-        dpbcd[12] = bcd[11]
+        dpbcd[3] = bcd[5]
+        dpbcd[4] = bcd[6]
+
+        dpbcd[6] = '1'
+        dpbcd[7] = '0'
+        dpbcd[8] = '0'
+
+    elif checker == ['0', '1', '0']:
+        print("In 010")
+        
+        dpbcd[0] = bcd[1]
+        dpbcd[1] = bcd[2]
 
         dpbcd[3] = bcd[9]
         dpbcd[4] = bcd[10]
 
-        dpbcd[6] = '0'
+        dpbcd[6] = '1'
+        dpbcd[7] = '0'
+        dpbcd[8] = '1'
+
+    elif checker == ['1', '0', '0']:
+        print("In 100")
+        dpbcd[0] = bcd[9]
+        dpbcd[1] = bcd[10]
+
+        dpbcd[3] = bcd[5]
+        dpbcd[4] = bcd[6]
+
+        dpbcd[6] = '1'
         dpbcd[7] = '1'
+        dpbcd[8] = '0'
 
-        dpbcd[10] = '1'
-        dpbcd[11] = '1'
+    elif checker == ['0', '1', '1']:
+        print("In 011")
+        dpbcd[0] = bcd[1]
+        dpbcd[1] = bcd[2]
 
-    elif checker == ['1', '1', '1']:
-        dpbcd[9] = '1'
-        dpbcd[5] = bcd[3]
-        dpbcd[8] = bcd[7]
-        dpbcd[12] = bcd[11]
+        dpbcd[3] = '1'
+        dpbcd[4] = '0'
+
+        dpbcd[6] = '1'
+        dpbcd[7] = '1'
+        dpbcd[8] = '1'
+
+    elif checker == ['1', '0', '1']:
+        print("In 101")
+        dpbcd[0] = bcd[5]
+        dpbcd[1] = bcd[6]
+
+        dpbcd[3] = '0'
+        dpbcd[4] = '1'
+
+        dpbcd[6] = '1'
+        dpbcd[7] = '1'
+        dpbcd[8] = '1'
+
+    elif checker == ['1', '1', '0']:
+        print("In 110")
+        dpbcd[0] = bcd[9]
+        dpbcd[1] = bcd[10]
 
         dpbcd[3] = '0'
         dpbcd[4] = '0'
 
         dpbcd[6] = '1'
         dpbcd[7] = '1'
+        dpbcd[8] = '1'
 
-        dpbcd[10] = '1'
-        dpbcd[11] = '1'
+    elif checker == ['1', '1', '1']:
+        print("In 111")
+        dpbcd[0] = '0'
+        dpbcd[1] = '0'
 
-    del (dpbcd[0])
-    del (dpbcd[0])
-    del (dpbcd[0])
+        dpbcd[3] = '1'
+        dpbcd[4] = '1'
+
+        dpbcd[6] = '1'
+        dpbcd[7] = '1'
+        dpbcd[8] = '1'
+    
+    print("dpbcd after ifs: "+ str(dpbcd))
+    print("checker: "+ str(checker)+'\n')
+    
     return dpbcd
 
 

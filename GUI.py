@@ -3,6 +3,7 @@ from tkinter import messagebox
 from tkinter import scrolledtext
 from tkinter import ttk  # Import the ttk module for combobox
 from functools import partial
+from tkinter import filedialog
 
 # Import the conversion function correctly
 from logic.densely_packed_BCD import convert_to_dpd
@@ -49,8 +50,19 @@ def convert_and_display(num_entry, power_entry, rounding_combobox, result_text):
 
 
 def export_to_text(binary, hexadecimal):
-    # Call the write_to_file function with binary and hexadecimal values
-    write_to_file(binary, hexadecimal)
+    # Prompt the user to choose the filename and directory
+    filename = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text files", "*.txt")])
+    
+    # Check if the user cancelled the operation
+    if filename == '':
+        return
+    
+    # Write the binary and hexadecimal values to the chosen file
+    with open(filename, 'w') as file:
+        file.write("DPD result:\nBinary: {}\nHexadecimal: {}".format(binary, hexadecimal))
+
+    tk.messagebox.showinfo("Export Successful", "Results exported to '{}'".format(filename))
+
 
 def create_gui():
     root = tk.Tk()
@@ -89,8 +101,6 @@ def create_gui():
         if binary and hexadecimal:
             # Export to text file
             export_to_text(binary, hexadecimal)
-            # Display export success message
-            messagebox.showinfo("Export Successful", "Results exported to 'dpd_results.txt'")
 
     export_btn = tk.Button(root, text="Export to Text", command=export_results)
     export_btn.grid(row=6, column=0, columnspan=2, padx=5, pady=5)
